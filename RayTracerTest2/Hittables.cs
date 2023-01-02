@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace RayTracerTest2;
 
 
-abstract class Sphere : Hittable
+public class Sphere : Hittable
 {
     public Vector3 center;
     public float radius;
@@ -19,7 +19,7 @@ abstract class Sphere : Hittable
         radius = r;
     }
 
-    public override HitRecord hit(Ray r, float tMin, float tMax, HitRecord rec)
+    public override HitRecord hit(Ray r, float tMin, float tMax)
     {
         Vector3 oc = r.Origin - center;
         float a = r.Direction.LengthSquared();
@@ -27,7 +27,7 @@ abstract class Sphere : Hittable
         float c = oc.LengthSquared() - radius * radius;
 
         float discriminant = halfB * halfB - a * c;
-        if (discriminant < 0) return false;
+        if (discriminant < 0) return new HitRecord();
 
         float sqrtd = (float)Math.Sqrt(discriminant);
 
@@ -42,18 +42,19 @@ abstract class Sphere : Hittable
             }
         }
 
+        HitRecord rec = new();
         rec.t = root;
         rec.p = r.At(rec.t);
         Vector3 outwardNormal = (rec.p - center) / radius;
         rec.setFaceToNormal(r, outwardNormal);
 
-        return true;
+        return rec;
     }
 }
 
 public abstract class Hittable
 {
-    public abstract HitRecord hit(Ray r, float t_min, float t_max, HitRecord rec);
+    public abstract HitRecord hit(Ray r, float t_min, float t_max);
 }
 public struct HitRecord
 {
@@ -75,7 +76,7 @@ public class HittableList : Hittable
 {
     public List<Hittable> objects = new();
 
-    HittableList()
+    public HittableList()
     {
     }
 
@@ -94,11 +95,11 @@ public class HittableList : Hittable
         objects.Add(h);
     }
 
-    public override HitRecord hit(Ray r, double t_min, double t_max)
+    public override HitRecord hit(Ray r, float t_min, float t_max)
     {
         HitRecord rec = new HitRecord();
         rec.didHit = false;
-        double closest = t_max;
+        float closest = t_max;
 
         foreach (Hittable o in objects)
         {

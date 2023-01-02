@@ -24,6 +24,11 @@ namespace RayTracerTest2
             const int imageWidth = 1200;
             const int imageHeight = (int)(imageWidth / aspectRatio);
             
+            // World
+            HittableList world = new();
+            world.add(new Sphere(new Vector3(0f,0f,-1f),0.5f));
+            world.add(new Sphere(new Vector3(0f,-100.5f,-1f),100f));
+            
             // Camera
             float viewportHeight = 2.0f;
             float viewportWidth = aspectRatio * viewportHeight;
@@ -63,7 +68,7 @@ namespace RayTracerTest2
                     Vector3 dir = lowerLeftCorner + u * horizontal + v * vertical - origin;
                     Ray r = new Ray(origin, dir);
 
-                    Vector3 color = RayColor(r);
+                    Vector3 color = RayColor(r, world);
 
                     color = new Vector3(
                         255 * (float)Math.Sqrt(color.X),
@@ -80,9 +85,9 @@ namespace RayTracerTest2
             return img;
         }
         
-        Vector3 RayColor(Ray r)
+        Vector3 RayColor(Ray r, Hittable world)
         {
-            float t = hitSphere(new Vector3(0, 0, -1), 0.5f, r);
+            /*float t = hitSphere(new Vector3(0, 0, -1), 0.5f, r);
             if (t > 0.0f)
             {
                 Vector3 n = Vector3.Normalize(r.At(t) - new Vector3(0, 0, -1));
@@ -92,6 +97,13 @@ namespace RayTracerTest2
             t = 0.5f * (unitDirection.Y + 1.0f);
             
             return (1.0f - t) * Vector3.One + t * new Vector3(0.5f, 0.7f, 1.0f);
+            */
+            HitRecord rec = world.hit(r, 0.001f, float.MaxValue);
+            if (rec.didHit) return 0.5f * (rec.normal + new Vector3(1, 1, 1));
+
+            Vector3 unitDirection = Vector3.Normalize(r.Direction);
+            float t = 0.5f * (unitDirection.Y + 1.0f);
+            return (1.0f - t) * new Vector3(1, 1, 1) + t * new Vector3(0.5f, 0.7f, 1.0f);
         }
 
         public float hitSphere(Vector3 center, float radius, Ray r)
