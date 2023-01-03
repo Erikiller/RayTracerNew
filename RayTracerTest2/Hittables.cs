@@ -47,7 +47,8 @@ public class Sphere : Hittable
         rec.p = r.At(rec.t);
         Vector3 outwardNormal = (rec.p - center) / radius;
         rec.setFaceToNormal(r, outwardNormal);
-
+        rec.didHit = true;
+        
         return rec;
     }
 }
@@ -56,14 +57,28 @@ public abstract class Hittable
 {
     public abstract HitRecord hit(Ray r, float t_min, float t_max);
 }
-public struct HitRecord
+public class HitRecord
 {
-    public Vector3 p;
-    public Vector3 normal;
-    public float t;
-    public bool FrontFace;
-    public bool didHit;
+    public Vector3 p { get; set; }
+    public Vector3 normal { get; set; }
+    public float t { get; set; }
+    public bool FrontFace { get; set; }
+    public bool didHit { get; set; }
 
+    public HitRecord(Vector3 _p, Vector3 _normal, float _t, bool _frontFace, bool _didHit)
+    {
+        p = _p;
+        normal = _normal;
+        t = _t;
+        FrontFace = _frontFace;
+        didHit = _didHit;
+    }
+
+    public HitRecord()
+    {
+        didHit = false;
+    }
+    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void setFaceToNormal(Ray r, Vector3 outwardNormal)
     {

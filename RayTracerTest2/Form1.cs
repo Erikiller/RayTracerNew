@@ -11,6 +11,7 @@ namespace RayTracerTest2
             double aspectRatio = 16.0 / 9.0;
             Width = 1200;
             Height = (int)(Width / aspectRatio);
+            
         }
         
         /// <summary>
@@ -99,7 +100,7 @@ namespace RayTracerTest2
             return (1.0f - t) * Vector3.One + t * new Vector3(0.5f, 0.7f, 1.0f);
             */
             HitRecord rec = world.hit(r, 0.001f, float.MaxValue);
-            if (rec.didHit) return 0.5f * (rec.normal + new Vector3(1, 1, 1));
+            if (rec.didHit) return 0.5f * (rec.normal + new Vector3(1, 1, 1)); // Problem might be at rec.DidHit!! // TODO:FIX THE FUCK OUT OF IT
 
             Vector3 unitDirection = Vector3.Normalize(r.Direction);
             float t = 0.5f * (unitDirection.Y + 1.0f);
