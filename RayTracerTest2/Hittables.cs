@@ -9,9 +9,7 @@ public class Sphere : Hittable
     public Vector3 center;
     public float radius;
 
-    public Sphere()
-    {
-    }
+    public Sphere() { }
 
     public Sphere(Vector3 cen, float r)
     {
@@ -83,7 +81,7 @@ public class HitRecord
     public void setFaceToNormal(Ray r, Vector3 outwardNormal)
     {
         FrontFace = Vector3.Dot(r.Direction, outwardNormal) < 0;
-        normal = FrontFace ? outwardNormal : -outwardNormal;
+        normal = FrontFace ? outwardNormal : -(outwardNormal);
     }
 }
 
@@ -91,21 +89,19 @@ public class HittableList : Hittable
 {
     public List<Hittable> objects = new();
 
-    public HittableList()
-    {
-    }
+    public HittableList() { }
 
     public HittableList(Hittable _object)
     {
-        add(_object);
+        Add(_object);
     }
 
-    public void clear()
+    public void Clear()
     {
         objects.Clear();
     }
 
-    public void add(Hittable h)
+    public void Add(Hittable h)
     {
         objects.Add(h);
     }
@@ -116,9 +112,9 @@ public class HittableList : Hittable
         rec.didHit = false;
         float closest = t_max;
 
-        foreach (Hittable o in objects)
+        foreach (Hittable h in objects)
         {
-            HitRecord hit = o.hit(r, t_min, closest);
+            HitRecord hit = h.hit(r, t_min, closest);
             if (hit.didHit)
             {
                 closest = hit.t;

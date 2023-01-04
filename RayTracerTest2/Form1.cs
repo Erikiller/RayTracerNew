@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace RayTracerTest2
 {
@@ -13,13 +15,15 @@ namespace RayTracerTest2
             Height = (int)(Width / aspectRatio);
             
         }
-        
+
         /// <summary>
-        ///     Renders the image and returns a bitmap
+        ///     Renders the image
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Bitmap</returns>
         unsafe Bitmap Render()
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             // Image
             const float aspectRatio = 16.0f/9.0f;
             const int imageWidth = 1200;
@@ -27,8 +31,11 @@ namespace RayTracerTest2
             
             // World
             HittableList world = new();
-            world.add(new Sphere(new Vector3(0f,0f,-1f),0.5f));
-            world.add(new Sphere(new Vector3(0f,-100.5f,-1f),100f));
+            
+            //Be careful with the order of rendering the objects,
+            //there can be some issues with how the objects are placed
+            world.Add(new Sphere(new Vector3(0f,-100.5f,-1f),100f));
+            world.Add(new Sphere(new Vector3(0f,0f,-1f),0.5f));
             
             // Camera
             float viewportHeight = 2.0f;
@@ -83,40 +90,19 @@ namespace RayTracerTest2
             }
             img.UnlockBits(imgData);
             img.RotateFlip(RotateFlipType.Rotate180FlipX);
+            stopwatch.Stop();
+            Console.WriteLine($"Rendered in {stopwatch.ElapsedMilliseconds} ms");
             return img;
         }
         
         Vector3 RayColor(Ray r, Hittable world)
         {
-            /*float t = hitSphere(new Vector3(0, 0, -1), 0.5f, r);
-            if (t > 0.0f)
-            {
-                Vector3 n = Vector3.Normalize(r.At(t) - new Vector3(0, 0, -1));
-                return 0.5f * new Vector3(n.X + 1, n.Y + 1, n.Z + 1);
-            }
-            Vector3 unitDirection = Vector3.Normalize(r.Direction);
-            t = 0.5f * (unitDirection.Y + 1.0f);
-            
-            return (1.0f - t) * Vector3.One + t * new Vector3(0.5f, 0.7f, 1.0f);
-            */
-            HitRecord rec = world.hit(r, 0.001f, float.MaxValue);
-            if (rec.didHit) return 0.5f * (rec.normal + new Vector3(1, 1, 1)); // Problem might be at rec.DidHit!! // TODO:FIX THE FUCK OUT OF IT
+            HitRecord rec = world.hit(r, 0f, float.MaxValue);
+            if (rec.didHit) return 0.5f * (rec.normal + new Vector3(1, 1, 1));
 
             Vector3 unitDirection = Vector3.Normalize(r.Direction);
             float t = 0.5f * (unitDirection.Y + 1.0f);
             return (1.0f - t) * new Vector3(1, 1, 1) + t * new Vector3(0.5f, 0.7f, 1.0f);
-        }
-
-        public float hitSphere(Vector3 center, float radius, Ray r)
-        {
-            Vector3 oc = r.Origin - center;
-            float a = Vector3.Dot(r.Direction, r.Direction);
-            float b = 2.0f * Vector3.Dot(oc, r.Direction);
-            float c = Vector3.Dot(oc, oc) - radius * radius;
-            float discriminant = b * b - 4f * a * c;
-
-            if (discriminant < 0) return -1f;
-            else return (-b - (float)Math.Sqrt(discriminant)) / (2.0f * a);
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
