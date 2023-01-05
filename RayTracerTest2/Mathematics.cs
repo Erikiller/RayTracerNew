@@ -26,7 +26,7 @@ public class Mathematics
         return new Vector3(RandomFloat(min, max), RandomFloat(min, max), RandomFloat(min, max));
     }
 
-    public Vector3 RandomInUnitSphere()
+    public static Vector3 RandomInUnitSphere()
     {
         while (true)
         {

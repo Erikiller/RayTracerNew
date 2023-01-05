@@ -54,6 +54,7 @@ namespace RayTracerTest2
 
             float samplesPerPixel = 10;
             byte bytesPerPixel = 24;
+            int maxDepth = 50;
 
             Bitmap img = new(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
 
@@ -91,13 +92,14 @@ namespace RayTracerTest2
                         float u = (x + (float)rnd.NextDouble()) / (imageWidth - 1);
                         float v = (y + (float)rnd.NextDouble()) / (imageHeight - 1);
                         Ray r = cam.GetRay(u, v);
-                        color += RayColor(r, world);
+                        color += RayColor(r, world,maxDepth);
                     }
-
+                    
+                    // Divide the color by the number of samples and gamma-correction for gamma=2.0
                     float scale = 1.0f / samplesPerPixel;
-                    color.X *= scale;
-                    color.Y *= scale;
-                    color.Z *= scale;
+                    color.X = (float)Math.Sqrt(scale * color.X);
+                    color.Y = (float)Math.Sqrt(scale * color.Y);
+                    color.Z = (float)Math.Sqrt(scale * color.Z);
 
                     /*color = new Vector3(
                         255 * (float)Math.Sqrt(color.X),
@@ -125,10 +127,16 @@ namespace RayTracerTest2
             return img;
         }
 
-        Vector3 RayColor(Ray r, Hittable world)
+        Vector3 RayColor(Ray r, Hittable world, int depth)
         {
             HitRecord rec = world.hit(r, 0.0001f, float.MaxValue);
-            if (rec.didHit) return 0.5f * (rec.normal + new Vector3(1, 1, 1));
+            if (depth <=0) return Vector3.Zero;
+
+            if (rec.didHit)
+            {
+                Vector3 target = rec.p + rec.normal + Mathematics.RandomInUnitSphere();
+                return 0.5f * RayColor(new Ray(rec.p, target - rec.p), world, depth -1);
+            }
 
             Vector3 unitDirection = Vector3.Normalize(r.Direction);
             float t = 0.5f * (unitDirection.Y + 1.0f);
