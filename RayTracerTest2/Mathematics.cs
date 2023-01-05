@@ -35,4 +35,20 @@ public class Mathematics
             return p;
         }
     }
+
+    public static Vector3 RandomUnitVector()
+    {
+        return Vector3.Normalize(RandomInUnitSphere());
+    }
+
+    public static Vector3 RandomInHeimisphere(Vector3 normal)
+    {
+        Vector3 inUnitSphere = RandomInUnitSphere();
+        if (Vector3.Dot(inUnitSphere, normal) > 0f)
+        {
+            return inUnitSphere;
+        }
+
+        return -inUnitSphere;
+    }
 }

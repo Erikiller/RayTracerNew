@@ -14,7 +14,7 @@ namespace RayTracerTest2
             Width = 1200;
             Height = (int)(Width / aspectRatio);
             
-            this.Text = "Rendering Programm by Erik";
+            this.Text = "Rendering Programm";
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace RayTracerTest2
 
             if (rec.didHit)
             {
-                Vector3 target = rec.p + rec.normal + Mathematics.RandomInUnitSphere();
+                Vector3 target = rec.p + rec.normal + Mathematics.RandomInHeimisphere(rec.normal); //Can also take "Mathematics.RandomUnitVector();"
                 return 0.5f * RayColor(new Ray(rec.p, target - rec.p), world, depth -1);
             }
 
