@@ -7,17 +7,14 @@ namespace RayTracerTest2
 {
     public partial class Form1 : Form
     {
-        public string TextOfForm { get; set; }
-
         public Form1()
         {
             InitializeComponent();
             double aspectRatio = 16.0 / 9.0;
             Width = 1200;
             Height = (int)(Width / aspectRatio);
-
-            TextOfForm = "Rendering Program";
-            this.Text = TextOfForm;
+            
+            this.Text = "Rendering Programm by Erik";
         }
 
         /// <summary>
@@ -87,7 +84,7 @@ namespace RayTracerTest2
 
                     Vector3 color = RayColor(r, world);
                     */
-
+                    
                     Vector3 color = Vector3.Zero;
                     for (int s = 0; s < samplesPerPixel; s++)
                     {
@@ -124,7 +121,7 @@ namespace RayTracerTest2
             img.UnlockBits(imgData);
             img.RotateFlip(RotateFlipType.Rotate180FlipX);
             stopwatch.Stop();
-            TextOfForm = $"Rendered in {stopwatch.ElapsedMilliseconds} ms";
+            //MessageBox.Show($"Rendered in {stopwatch.ElapsedMilliseconds} ms");
             return img;
         }
 
@@ -145,16 +142,6 @@ namespace RayTracerTest2
             e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
             e.Graphics.DrawImage(img, new Rectangle(0, 0, Width, Height), 0, 0, img.Width, img.Height,
                 GraphicsUnit.Pixel);
-        }
-    }
-
-    public class Mathematics
-    {
-        public float Clamp(float x, float min, float max)
-        {
-            if (x < min) return min;
-            if (x > max) return max;
-            return x;
         }
     }
 }

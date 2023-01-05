@@ -20,6 +20,7 @@ public class Camera
         AspectRatio = 16f / 9f;
         ViewportHeight = 2;
         ViewportWidth = AspectRatio * ViewportHeight;
+        FocalLength = 1f;
 
         _origin = Vector3.Zero;
         _horizontal = new Vector3(ViewportWidth, 0f, 0f);
