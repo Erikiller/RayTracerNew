@@ -8,13 +8,15 @@ public class Sphere : Hittable
 {
     public Vector3 center;
     public float radius;
+    public Materials Material;
 
     public Sphere() { }
 
-    public Sphere(Vector3 cen, float r)
+    public Sphere(Vector3 cen, float r, Materials mat)
     {
         center = cen;
         radius = r;
+        Material = mat;
     }
 
     public override HitRecord hit(Ray r, float tMin, float tMax)
@@ -46,6 +48,7 @@ public class Sphere : Hittable
         Vector3 outwardNormal = (rec.p - center) / radius;
         rec.setFaceToNormal(r, outwardNormal);
         rec.didHit = true;
+        rec.Material = Material;
         
         return rec;
     }
@@ -62,14 +65,16 @@ public class HitRecord
     public float t { get; set; }
     public bool FrontFace { get; set; }
     public bool didHit { get; set; }
+    public Materials Material { get; set; }
 
-    public HitRecord(Vector3 _p, Vector3 _normal, float _t, bool _frontFace, bool _didHit)
+    public HitRecord(Vector3 _p, Vector3 _normal, float _t, bool _frontFace, bool _didHit, Materials _material)
     {
         p = _p;
         normal = _normal;
         t = _t;
         FrontFace = _frontFace;
         didHit = _didHit;
+        Material = _material;
     }
 
     public HitRecord()
@@ -88,7 +93,6 @@ public class HitRecord
 public class HittableList : Hittable
 {
     public List<Hittable> objects = new();
-
     public HittableList() { }
 
     public HittableList(Hittable _object)

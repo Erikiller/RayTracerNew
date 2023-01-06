@@ -51,4 +51,18 @@ public class Mathematics
 
         return -inUnitSphere;
     }
+    /// <summary>
+    /// Returns true if the Vector is near to Zero in all dimensions
+    /// </summary>
+    /// <returns></returns>
+    public static bool NearZero(Vector3 vec)
+    {
+        double s = 1e-8;
+        return ((Math.Abs(vec.X) < s) && (Math.Abs(vec.Y) < s) && (Math.Abs(vec.Z) < s));
+    }
+
+    public static Vector3 Reflect(Vector3 v, Vector3 n)
+    {
+        return v - 2 * Vector3.Dot(v, n) * n;
+    }
 }

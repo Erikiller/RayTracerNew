@@ -123,7 +123,7 @@ namespace RayTracerTest2
             img.UnlockBits(imgData);
             img.RotateFlip(RotateFlipType.Rotate180FlipX);
             stopwatch.Stop();
-            //MessageBox.Show($"Rendered in {stopwatch.ElapsedMilliseconds} ms");
+            MessageBox.Show($"Rendered in {stopwatch.ElapsedMilliseconds} ms");
             return img;
         }
 
@@ -134,8 +134,16 @@ namespace RayTracerTest2
 
             if (rec.didHit)
             {
-                Vector3 target = rec.p + rec.normal + Mathematics.RandomInHeimisphere(rec.normal); //Can also take "Mathematics.RandomUnitVector();"
-                return 0.5f * RayColor(new Ray(rec.p, target - rec.p), world, depth -1);
+                Ray scattered = new();
+                Vector3 attenuation;
+                if (rec.Material.Scatter(r, rec, attenuation, scattered))
+                {
+                    return attenuation * RayColor(scattered, world, depth - 1);
+                }
+
+                return Vector3.Zero;
+                /*Vector3 target = rec.p + rec.normal + Mathematics.RandomInHeimisphere(rec.normal); //Can also take "Mathematics.RandomUnitVector();"
+                return 0.5f * RayColor(new Ray(rec.p, target - rec.p), world, depth -1); */
             }
 
             Vector3 unitDirection = Vector3.Normalize(r.Direction);
