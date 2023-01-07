@@ -65,6 +65,19 @@ public class Lambertian : Materials
         return scattered;
     }
 }
+
+public class Metal : Materials
+{
+    public override Scattered Scatter(Ray r, HitRecord rec)
+    {
+        Scattered scattered = new();
+        Vector3 reflected = Vector3.Reflect(Vector3.Normalize(r.Direction), rec.normal);
+        scattered.ScatteredRay = new Ray(rec.p, reflected);
+        scattered.Attenuation = Vector3.One;
+        
+        return scattered;
+    }
+}
 /*
 
 public abstract class Metal : Materials
