@@ -65,4 +65,9 @@ public class Mathematics
     {
         return v - 2 * Vector3.Dot(v, n) * n;
     }
+
+    public static Vector3 refract(Vector3 uv, Vector3 n, float etaiOverEtat)
+    {
+        double cosTheta = 
+    }
 }

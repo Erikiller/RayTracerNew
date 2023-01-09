@@ -47,7 +47,7 @@ public class Lambertian : Materials
 {
     public Vector3 Color;
 
-    Lambertian(Vector3 color)
+    public Lambertian(Vector3 color)
     {
         Color = color;
     }
@@ -68,12 +68,21 @@ public class Lambertian : Materials
 
 public class Metal : Materials
 {
+    public Vector3 Color;
+    public float Fuzz;
+
+    public Metal(Vector3 color, float f)
+    {
+        Color = color;
+        Fuzz = f < 1 ? f : 1;
+    }
     public override Scattered Scatter(Ray r, HitRecord rec)
     {
         Scattered scattered = new();
         Vector3 reflected = Vector3.Reflect(Vector3.Normalize(r.Direction), rec.normal);
-        scattered.ScatteredRay = new Ray(rec.p, reflected);
+        scattered.ScatteredRay = new Ray(rec.p, reflected + Fuzz * Mathematics.RandomInUnitSphere());
         scattered.Attenuation = Vector3.One;
+        scattered.DidScatter = Vector3.Dot(scattered.ScatteredRay.Direction, rec.normal) > 0f;
         
         return scattered;
     }

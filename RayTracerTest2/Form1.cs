@@ -36,8 +36,18 @@ namespace RayTracerTest2
 
             //Be careful with the order of rendering the objects,
             //there can be some issues with how the objects are placed
-            world.Add(new Sphere(new Vector3(0f, -100.5f, -1f), 100f));
-            world.Add(new Sphere(new Vector3(0f, 0f, -1f), 0.5f));
+            //world.Add(new Sphere(new Vector3(0f, -100.5f, -1f), 100f));
+            //world.Add(new Sphere(new Vector3(0f, 0f, -1f), 0.5f));
+
+            Materials materialGround = new Lambertian(new Vector3(0.8f, 0.8f, 0f));
+            Materials materialCenter = new Lambertian(new Vector3(0.7f, 0.3f, 0.3f));
+            Materials materialLeft = new Metal(new Vector3(0.8f, 0.8f, 0.8f),0.3f);
+            Materials materialRight = new Metal(new Vector3(0.8f, 0.6f, 0.2f), 1);
+            
+            world.Add(new Sphere(new Vector3(0f, -100.5f,-1f),100f,materialGround));
+            world.Add(new Sphere(new Vector3(-1f,0f,-1f),0.5f,materialLeft));
+            world.Add(new Sphere(new Vector3(1f,0f,-1f),0.5f,materialRight));
+            world.Add(new Sphere(new Vector3(0f,0f,-1f),0.5f,materialCenter));
 
             // Camera
             float viewportHeight = 2.0f;
@@ -52,7 +62,7 @@ namespace RayTracerTest2
             // Camera
             Camera cam = new();
 
-            float samplesPerPixel = 10;
+            float samplesPerPixel = 25;
             byte bytesPerPixel = 24;
             int maxDepth = 50;
 
@@ -134,14 +144,21 @@ namespace RayTracerTest2
 
             if (rec.didHit)
             {
-                Ray scattered = new();
+                Scattered scatter = rec.Material.Scatter(r, rec);
+                if (scatter.DidScatter)
+                {
+                    return scatter.Attenuation * RayColor(scatter.ScatteredRay, world, depth - 1);
+                }
+                return Vector3.Zero;
+
+                /*Ray scattered = new();
                 Vector3 attenuation;
                 if (rec.Material.Scatter(r, rec, attenuation, scattered))
                 {
                     return attenuation * RayColor(scattered, world, depth - 1);
                 }
 
-                return Vector3.Zero;
+                return Vector3.Zero; /*
                 /*Vector3 target = rec.p + rec.normal + Mathematics.RandomInHeimisphere(rec.normal); //Can also take "Mathematics.RandomUnitVector();"
                 return 0.5f * RayColor(new Ray(rec.p, target - rec.p), world, depth -1); */
             }
