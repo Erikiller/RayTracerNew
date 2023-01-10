@@ -40,9 +40,12 @@ namespace RayTracerTest2
             //world.Add(new Sphere(new Vector3(0f, 0f, -1f), 0.5f));
 
             Materials materialGround = new Lambertian(new Vector3(0.8f, 0.8f, 0f));
-            Materials materialCenter = new Lambertian(new Vector3(0.7f, 0.3f, 0.3f));
-            Materials materialLeft = new Metal(new Vector3(0.8f, 0.8f, 0.8f),0.3f);
+            Materials materialCenter = new Lambertian(new Vector3(0.1f, 0.2f, 0.5f));
+            Materials materialLeft = new Dielectric(1.5f);
             Materials materialRight = new Metal(new Vector3(0.8f, 0.6f, 0.2f), 1);
+            
+            //Materials materialCenter = new Lambertian(new Vector3(0.7f, 0.3f, 0.3f));
+            //Materials materialLeft = new Metal(new Vector3(0.8f, 0.8f, 0.8f),0.3f);
             
             world.Add(new Sphere(new Vector3(0f, -100.5f,-1f),100f,materialGround));
             world.Add(new Sphere(new Vector3(-1f,0f,-1f),0.5f,materialLeft));
@@ -62,7 +65,7 @@ namespace RayTracerTest2
             // Camera
             Camera cam = new();
 
-            float samplesPerPixel = 25;
+            float samplesPerPixel = 15;
             byte bytesPerPixel = 24;
             int maxDepth = 50;
 

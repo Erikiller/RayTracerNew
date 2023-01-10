@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-
 namespace RayTracerTest2;
 
 public class Mathematics
@@ -66,8 +65,11 @@ public class Mathematics
         return v - 2 * Vector3.Dot(v, n) * n;
     }
 
-    public static Vector3 refract(Vector3 uv, Vector3 n, float etaiOverEtat)
+    public static Vector3 Refract(Vector3 uv, Vector3 n, float etaiOverEtat)
     {
-        double cosTheta = 
+        float cosTheta = Math.Min(Vector3.Dot(-uv, n), 1f);
+        Vector3 rOutPerp = etaiOverEtat * (uv + cosTheta * n);
+        Vector3 rOutParallel = (float)-Math.Sqrt(Math.Abs(1f - rOutPerp.LengthSquared())) * n;
+        return rOutPerp + rOutParallel;
     }
 }

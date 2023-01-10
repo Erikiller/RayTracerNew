@@ -87,6 +87,41 @@ public class Metal : Materials
         return scattered;
     }
 }
+
+public class Dielectric : Materials
+{
+    public float Ir; //Index of reflection
+
+    public Dielectric(float indexOfReflection)
+    {
+        Ir = indexOfReflection;
+    }
+    public override Scattered Scatter(Ray r, HitRecord rec)
+    {
+        Scattered scatter = new();
+        scatter.Attenuation = Vector3.One;
+        float refractionRatio = rec.FrontFace ? (1f / Ir) : Ir;
+
+        Vector3 unitDirection = Vector3.Normalize(r.Direction);
+        float cosTheta = Math.Min(Vector3.Dot(-unitDirection, rec.normal),1f);
+        float sinTheta = (float)Math.Sqrt(1f - cosTheta * cosTheta);
+
+        bool cannotRefract = refractionRatio * sinTheta > 1f;
+        Vector3 direction;
+
+        if (cannotRefract)
+            direction = Mathematics.Reflect(unitDirection, rec.normal);
+        else
+            direction = Mathematics.Refract(unitDirection, rec.normal, refractionRatio);
+
+        scatter.ScatteredRay = new Ray(rec.p, direction);
+            
+        //Vector3 refracted = Mathematics.Refract(unitDirection, rec.normal, refractionRatio);
+        //scatter.ScatteredRay = new Ray(rec.p, refracted);
+        scatter.DidScatter = true;
+        return scatter;
+    }
+}
 /*
 
 public abstract class Metal : Materials
