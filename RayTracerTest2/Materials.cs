@@ -121,6 +121,14 @@ public class Dielectric : Materials
         scatter.DidScatter = true;
         return scatter;
     }
+
+    private static float Reflactance(float cosine, float refIdx)
+    {
+        // Use Schlik's approximation for reflectance
+        float r0 = (1 - refIdx) / (1f + refIdx);
+        r0 = r0 * r0;
+        return r0 + (1 - r0) * (float)Math.Pow((1f - cosine), 5f);
+    }
 }
 /*
 
