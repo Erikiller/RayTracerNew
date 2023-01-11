@@ -77,4 +77,14 @@ public class Mathematics
         Vector3 rOutParallel = (float)-Math.Sqrt(Math.Abs(1f - rOutPerp.LengthSquared())) * n;
         return rOutPerp + rOutParallel;
     }
+
+    public static Vector3 randomInUnitDisk()
+    {
+        while (true)
+        {
+            Vector3 p = new Vector3(RandomFloat(-1f, 1f), RandomFloat(-1f, 1f), 0f);
+            if (p.LengthSquared() >=1) continue;
+            return p;
+        }
+    }
 }

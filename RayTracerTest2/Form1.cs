@@ -71,7 +71,7 @@ namespace RayTracerTest2
             Vector3 lowerLeftCorner = origin - horizontal / 2 - vertical / 2 - new Vector3(0, 0, focalLength);
 
             // Camera
-            Camera cam = new(90f, new Vector3(-2f,2f,1f), new Vector3(0f,0f,-1f), new Vector3(0f,1f,0f));
+            Camera cam = new(20f, new Vector3(-2f,2f,1f), new Vector3(0f,0f,-1f), new Vector3(0f,1f,0f));
 
             float samplesPerPixel = 10;
             byte bytesPerPixel = 24;
