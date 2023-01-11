@@ -40,6 +40,11 @@ public class Mathematics
         return Vector3.Normalize(RandomInUnitSphere());
     }
 
+    public static float DegreesToRadiant(float angle)
+    {
+        return (float)(Math.PI / 180) * angle;
+    }
+
     public static Vector3 RandomInHeimisphere(Vector3 normal)
     {
         Vector3 inUnitSphere = RandomInUnitSphere();

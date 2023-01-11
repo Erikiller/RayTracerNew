@@ -33,7 +33,14 @@ namespace RayTracerTest2
 
             // World
             HittableList world = new();
+            float ra = (float)Math.Cos(Math.PI / 4f);
 
+            //Materials materialLeft = new Lambertian(new Vector3(0f, 0f, 1f));
+            //Materials materialRight = new Lambertian(new Vector3(1f, 0f, 0f));
+            
+            //world.Add(new Sphere(new Vector3(-ra, 0f, -1f), ra, materialLeft));
+            //world.Add(new Sphere(new Vector3(ra, 0f, -1f), ra, materialRight));
+            
             //Be careful with the order of rendering the objects,
             //there can be some issues with how the objects are placed
             //world.Add(new Sphere(new Vector3(0f, -100.5f, -1f), 100f));
@@ -42,15 +49,16 @@ namespace RayTracerTest2
             Materials materialGround = new Lambertian(new Vector3(0.8f, 0.8f, 0f));
             Materials materialCenter = new Lambertian(new Vector3(0.1f, 0.2f, 0.5f));
             Materials materialLeft = new Dielectric(1.5f);
-            Materials materialRight = new Metal(new Vector3(0.8f, 0.6f, 0.2f), 1);
+            Materials materialRight = new Metal(new Vector3(0.8f, 0.6f, 0.2f), 0f);
             
             //Materials materialCenter = new Lambertian(new Vector3(0.7f, 0.3f, 0.3f));
             //Materials materialLeft = new Metal(new Vector3(0.8f, 0.8f, 0.8f),0.3f);
             
-            world.Add(new Sphere(new Vector3(0f, -100.5f,-1f),100f,materialGround));
-            world.Add(new Sphere(new Vector3(-1f,0f,-1f),0.5f,materialLeft));
+            world.Add(new Sphere(new Vector3(0f, -100.5f,-1f),100f,materialGround)); 
+            world.Add(new Sphere(new Vector3(-1f,0f,-1f),0.5f,materialLeft)); 
+            world.Add(new Sphere(new Vector3(-1f, 0f, -1f), -0.45f, materialLeft)); 
             world.Add(new Sphere(new Vector3(1f,0f,-1f),0.5f,materialRight));
-            world.Add(new Sphere(new Vector3(0f,0f,-1f),0.5f,materialCenter));
+            world.Add(new Sphere(new Vector3(0f,0f,-1f),0.5f,materialCenter)); 
 
             // Camera
             float viewportHeight = 2.0f;
@@ -63,9 +71,9 @@ namespace RayTracerTest2
             Vector3 lowerLeftCorner = origin - horizontal / 2 - vertical / 2 - new Vector3(0, 0, focalLength);
 
             // Camera
-            Camera cam = new();
+            Camera cam = new(90f, new Vector3(-2f,2f,1f), new Vector3(0f,0f,-1f), new Vector3(0f,1f,0f));
 
-            float samplesPerPixel = 15;
+            float samplesPerPixel = 10;
             byte bytesPerPixel = 24;
             int maxDepth = 50;
 
