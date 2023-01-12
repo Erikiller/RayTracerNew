@@ -78,7 +78,7 @@ public class Mathematics
         return rOutPerp + rOutParallel;
     }
 
-    public static Vector3 randomInUnitDisk()
+    public static Vector3 RandomInUnitDisk()
     {
         while (true)
         {

@@ -71,9 +71,15 @@ namespace RayTracerTest2
             Vector3 lowerLeftCorner = origin - horizontal / 2 - vertical / 2 - new Vector3(0, 0, focalLength);
 
             // Camera
-            Camera cam = new(20f, new Vector3(-2f,2f,1f), new Vector3(0f,0f,-1f), new Vector3(0f,1f,0f));
+            Vector3 lookFrom = new Vector3(3f, 3f, 2f);
+            Vector3 lookAt = new Vector3(0f, 0f, -1f);
+            Vector3 vup = new Vector3(0f, 1f, 0f);
+            float distToFocus = (lookFrom - lookAt).Length();
+            float aperture = 2f;
+            
+            Camera cam = new(20f, lookFrom, lookAt, vup, aperture, distToFocus);
 
-            float samplesPerPixel = 10;
+            float samplesPerPixel = 30;
             byte bytesPerPixel = 24;
             int maxDepth = 50;
 
