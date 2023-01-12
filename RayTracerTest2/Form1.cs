@@ -17,6 +17,61 @@ namespace RayTracerTest2
             this.Text = "Rendering Programm";
         }
 
+        HittableList RandomScene()
+        {
+            HittableList world = new();
+            Random rnd = new();
+
+            Materials ground = new Lambertian(new Vector3(0.5f, 0.5f, 0.5f));
+            world.Add(new Sphere(new Vector3(0f,-1000f,0f),1000,ground));
+
+            for (int a = -11; a < 11; a++)
+            {
+                for (int b = -11; b < 11; b++)
+                {
+                    float chooseMaterial = rnd.NextSingle();
+                    Vector3 center = new Vector3(a + 0.9f * rnd.NextSingle(), 0.2f, b + 0.9f * rnd.NextSingle());
+                    if ((center - new Vector3(4f, 0.2f, 0f)).Length() > 0.9f)
+                    {
+                        Materials sphereMaterial;
+
+                        if (chooseMaterial < 0.8f)
+                        {
+                            //Diffuse
+                            Vector3 color = Mathematics.Random() * Mathematics.Random();
+                            sphereMaterial = new Lambertian(color);
+                            world.Add(new Sphere(center, 0.2f, sphereMaterial));
+                        }
+                        else if (chooseMaterial < 0.95f)
+                        {
+                            //Metal
+                            Vector3 color = Mathematics.Random(0.5f, 1f);
+                            float fuzz = Mathematics.RandomFloat(0f, 0.5f);
+                            sphereMaterial = new Metal(color, fuzz);
+                            world.Add(new Sphere(center, 0.2f, sphereMaterial));
+                        }
+                        else
+                        {
+                            //Glass
+                            sphereMaterial = new Dielectric(1.5f);
+                            world.Add(new Sphere(center, 0.2f, sphereMaterial));
+                        }
+                    }
+                }
+            }
+
+            Materials material1 = new Dielectric(1.5f);
+            world.Add(new Sphere(new Vector3(0f,1f,0f),1f, material1));
+
+            Materials material2 = new Lambertian(new Vector3(0.4f, 0.2f, 0.1f));
+            world.Add(new Sphere(new Vector3(-4f, 1f, 0f), 1f, material2));
+
+            Materials material3 = new Metal(new Vector3(0.7f, 0.6f, 0.5f), 0f);
+            world.Add(new Sphere(new Vector3(4f,1f,0f), 1f, material3));
+
+            return world;
+        }
+
         /// <summary>
         ///     Renders the image
         /// </summary>
@@ -32,9 +87,10 @@ namespace RayTracerTest2
             const int imageHeight = (int)(imageWidth / aspectRatio);
 
             // World
-            HittableList world = new();
+            //HittableList world = new();
             float ra = (float)Math.Cos(Math.PI / 4f);
 
+            HittableList world = RandomScene();
             //Materials materialLeft = new Lambertian(new Vector3(0f, 0f, 1f));
             //Materials materialRight = new Lambertian(new Vector3(1f, 0f, 0f));
             
@@ -46,19 +102,19 @@ namespace RayTracerTest2
             //world.Add(new Sphere(new Vector3(0f, -100.5f, -1f), 100f));
             //world.Add(new Sphere(new Vector3(0f, 0f, -1f), 0.5f));
 
-            Materials materialGround = new Lambertian(new Vector3(0.8f, 0.8f, 0f));
-            Materials materialCenter = new Lambertian(new Vector3(0.1f, 0.2f, 0.5f));
-            Materials materialLeft = new Dielectric(1.5f);
-            Materials materialRight = new Metal(new Vector3(0.8f, 0.6f, 0.2f), 0f);
+            //Materials materialGround = new Lambertian(new Vector3(0.8f, 0.8f, 0f));
+            //Materials materialCenter = new Lambertian(new Vector3(0.1f, 0.2f, 0.5f));
+            //Materials materialLeft = new Dielectric(1.5f);
+            //Materials materialRight = new Metal(new Vector3(0.8f, 0.6f, 0.2f), 0f);
             
             //Materials materialCenter = new Lambertian(new Vector3(0.7f, 0.3f, 0.3f));
             //Materials materialLeft = new Metal(new Vector3(0.8f, 0.8f, 0.8f),0.3f);
             
-            world.Add(new Sphere(new Vector3(0f, -100.5f,-1f),100f,materialGround)); 
-            world.Add(new Sphere(new Vector3(-1f,0f,-1f),0.5f,materialLeft)); 
-            world.Add(new Sphere(new Vector3(-1f, 0f, -1f), -0.45f, materialLeft)); 
-            world.Add(new Sphere(new Vector3(1f,0f,-1f),0.5f,materialRight));
-            world.Add(new Sphere(new Vector3(0f,0f,-1f),0.5f,materialCenter)); 
+            //world.Add(new Sphere(new Vector3(0f, -100.5f,-1f),100f,materialGround)); 
+            //world.Add(new Sphere(new Vector3(-1f,0f,-1f),0.5f,materialLeft)); 
+            //world.Add(new Sphere(new Vector3(-1f, 0f, -1f), -0.45f, materialLeft)); 
+            //world.Add(new Sphere(new Vector3(1f,0f,-1f),0.5f,materialRight));
+            //world.Add(new Sphere(new Vector3(0f,0f,-1f),0.5f,materialCenter)); 
 
             // Camera
             float viewportHeight = 2.0f;
@@ -71,15 +127,15 @@ namespace RayTracerTest2
             Vector3 lowerLeftCorner = origin - horizontal / 2 - vertical / 2 - new Vector3(0, 0, focalLength);
 
             // Camera
-            Vector3 lookFrom = new Vector3(3f, 3f, 2f);
-            Vector3 lookAt = new Vector3(0f, 0f, -1f);
+            Vector3 lookFrom = new Vector3(13f, 2f, 3f);
+            Vector3 lookAt = Vector3.Zero;
             Vector3 vup = new Vector3(0f, 1f, 0f);
-            float distToFocus = (lookFrom - lookAt).Length();
-            float aperture = 2f;
+            float distToFocus = 10; //(lookFrom - lookAt).Length();
+            float aperture = 0.1f;
             
             Camera cam = new(20f, lookFrom, lookAt, vup, aperture, distToFocus);
 
-            float samplesPerPixel = 30;
+            float samplesPerPixel = 100;
             byte bytesPerPixel = 24;
             int maxDepth = 50;
 
