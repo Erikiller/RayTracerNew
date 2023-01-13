@@ -249,6 +249,14 @@ namespace RayTracerTest2
             e.Graphics.DrawImage(img, new Rectangle(0, 0, Width, Height), 0, 0, img.Width, img.Height,
                 GraphicsUnit.Pixel);
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            AllocConsole();
+        }
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool AllocConsole();
     }
 }
 
