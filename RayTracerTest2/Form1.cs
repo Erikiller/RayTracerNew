@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Numerics;
-using System.Runtime.InteropServices;
 
 namespace RayTracerTest2
 {
@@ -115,7 +114,6 @@ namespace RayTracerTest2
             //world.Add(new Sphere(new Vector3(-1f, 0f, -1f), -0.45f, materialLeft)); 
             //world.Add(new Sphere(new Vector3(1f,0f,-1f),0.5f,materialRight));
             //world.Add(new Sphere(new Vector3(0f,0f,-1f),0.5f,materialCenter)); 
-
             // Camera
             float viewportHeight = 2.0f;
             float viewportWidth = aspectRatio * viewportHeight;
@@ -135,7 +133,7 @@ namespace RayTracerTest2
             
             Camera cam = new(20f, lookFrom, lookAt, vup, aperture, distToFocus);
 
-            float samplesPerPixel = 100;
+            float samplesPerPixel = 15;
             byte bytesPerPixel = 24;
             int maxDepth = 50;
 
@@ -206,7 +204,6 @@ namespace RayTracerTest2
             img.UnlockBits(imgData);
             img.RotateFlip(RotateFlipType.Rotate180FlipX);
             stopwatch.Stop();
-            MessageBox.Show($"Rendered in {stopwatch.ElapsedMilliseconds} ms");
             return img;
         }
 
@@ -250,15 +247,16 @@ namespace RayTracerTest2
                 GraphicsUnit.Pixel);
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        /*private void Form1_Load(object sender, EventArgs e)
         {
-            AllocConsole();
+            AllocConsole(); // Free console is also needed but I dont know where
         }
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool AllocConsole();
+        static extern bool AllocConsole();*/
     }
 }
+
 
 // MATH EXPLANATION:
 
