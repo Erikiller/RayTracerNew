@@ -12,7 +12,7 @@ namespace RayTracerTest2
             double aspectRatio = 16.0 / 9.0;
             Width = 1200;
             Height = (int)(Width / aspectRatio);
-            
+
             this.Text = "Rendering Programm";
         }
 
@@ -22,7 +22,7 @@ namespace RayTracerTest2
             Random rnd = new();
 
             Materials ground = new Lambertian(new Vector3(0.5f, 0.5f, 0.5f));
-            world.Add(new Sphere(new Vector3(0f,-1000f,0f),1000,ground));
+            world.Add(new Sphere(new Vector3(0f, -1000f, 0f), 1000, ground));
 
             for (int a = -11; a < 11; a++)
             {
@@ -60,13 +60,13 @@ namespace RayTracerTest2
             }
 
             Materials material1 = new Dielectric(1.5f);
-            world.Add(new Sphere(new Vector3(0f,1f,0f),1f, material1));
+            world.Add(new Sphere(new Vector3(0f, 1f, 0f), 1f, material1));
 
             Materials material2 = new Lambertian(new Vector3(0.4f, 0.2f, 0.1f));
             world.Add(new Sphere(new Vector3(-4f, 1f, 0f), 1f, material2));
 
             Materials material3 = new Metal(new Vector3(0.7f, 0.6f, 0.5f), 0f);
-            world.Add(new Sphere(new Vector3(4f,1f,0f), 1f, material3));
+            world.Add(new Sphere(new Vector3(4f, 1f, 0f), 1f, material3));
 
             return world;
         }
@@ -92,10 +92,10 @@ namespace RayTracerTest2
             HittableList world = RandomScene();
             //Materials materialLeft = new Lambertian(new Vector3(0f, 0f, 1f));
             //Materials materialRight = new Lambertian(new Vector3(1f, 0f, 0f));
-            
+
             //world.Add(new Sphere(new Vector3(-ra, 0f, -1f), ra, materialLeft));
             //world.Add(new Sphere(new Vector3(ra, 0f, -1f), ra, materialRight));
-            
+
             //Be careful with the order of rendering the objects,
             //there can be some issues with how the objects are placed
             //world.Add(new Sphere(new Vector3(0f, -100.5f, -1f), 100f));
@@ -105,10 +105,10 @@ namespace RayTracerTest2
             //Materials materialCenter = new Lambertian(new Vector3(0.1f, 0.2f, 0.5f));
             //Materials materialLeft = new Dielectric(1.5f);
             //Materials materialRight = new Metal(new Vector3(0.8f, 0.6f, 0.2f), 0f);
-            
+
             //Materials materialCenter = new Lambertian(new Vector3(0.7f, 0.3f, 0.3f));
             //Materials materialLeft = new Metal(new Vector3(0.8f, 0.8f, 0.8f),0.3f);
-            
+
             //world.Add(new Sphere(new Vector3(0f, -100.5f,-1f),100f,materialGround)); 
             //world.Add(new Sphere(new Vector3(-1f,0f,-1f),0.5f,materialLeft)); 
             //world.Add(new Sphere(new Vector3(-1f, 0f, -1f), -0.45f, materialLeft)); 
@@ -130,13 +130,12 @@ namespace RayTracerTest2
             Vector3 vup = new Vector3(0f, 1f, 0f);
             float distToFocus = 10; //(lookFrom - lookAt).Length();
             float aperture = 0.1f;
-            
+
             Camera cam = new(20f, lookFrom, lookAt, vup, aperture, distToFocus);
 
-            float samplesPerPixel = 15;
+            float samplesPerPixel = 1;
             byte bytesPerPixel = 24;
             int maxDepth = 50;
-
             Bitmap img = new(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
 
             BitmapData imgData = img.LockBits(
@@ -144,6 +143,7 @@ namespace RayTracerTest2
                 ImageLockMode.WriteOnly,
                 img.PixelFormat);
 
+            int count = 0;
             // Scan0 => determine/calls the first address of the bitmap
             byte* imgPointer = (byte*)imgData.Scan0.ToPointer();
 
@@ -166,16 +166,16 @@ namespace RayTracerTest2
 
                     Vector3 color = RayColor(r, world);
                     */
-                    
+
                     Vector3 color = Vector3.Zero;
                     for (int s = 0; s < samplesPerPixel; s++)
                     {
                         float u = (x + (float)rnd.NextDouble()) / (imageWidth - 1);
                         float v = (y + (float)rnd.NextDouble()) / (imageHeight - 1);
                         Ray r = cam.GetRay(u, v);
-                        color += RayColor(r, world,maxDepth);
+                        color += RayColor(r, world, maxDepth);
                     }
-                    
+
                     // Divide the color by the number of samples and gamma-correction for gamma=2.0
                     float scale = 1.0f / samplesPerPixel;
                     color.X = (float)Math.Sqrt(scale * color.X);
@@ -194,23 +194,28 @@ namespace RayTracerTest2
                         255f * mth.Clamp(color.Y, 0.0f, 0.999f),
                         255f * mth.Clamp(color.Z, 0.0f, 0.999f)
                     );
-                    
+
                     data[2] = (byte)color.X;
                     data[1] = (byte)color.Y;
                     data[0] = (byte)color.Z;
+                    count = x + y;
                 }
             }
 
+            
             img.UnlockBits(imgData);
             img.RotateFlip(RotateFlipType.Rotate180FlipX);
             stopwatch.Stop();
+#if DEBUG
+            Console.WriteLine($"{count} Itterations in Render"); //For Debug
+#endif
             return img;
         }
 
         Vector3 RayColor(Ray r, Hittable world, int depth)
         {
             HitRecord rec = world.hit(r, 0.0001f, float.MaxValue);
-            if (depth <=0) return Vector3.Zero;
+            if (depth <= 0) return Vector3.Zero;
 
             if (rec.didHit)
             {
@@ -219,6 +224,7 @@ namespace RayTracerTest2
                 {
                     return scatter.Attenuation * RayColor(scatter.ScatteredRay, world, depth - 1);
                 }
+
                 return Vector3.Zero;
 
                 /*Ray scattered = new();
@@ -247,10 +253,11 @@ namespace RayTracerTest2
                 GraphicsUnit.Pixel);
         }
 
-        /*private void Form1_Load(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
-            AllocConsole(); // Free console is also needed but I dont know where
+            //AllocConsole(); // Free console is also needed but I dont know where
         }
+        /*
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AllocConsole();*/

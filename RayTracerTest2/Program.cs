@@ -12,16 +12,16 @@ namespace RayTracerTest2
             // see https://aka.ms/applicationconfiguration.
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             ApplicationConfiguration.Initialize();
-            #if DEBUG
+#if DEBUG
             NativeMethods.AllocConsole();
             Console.WriteLine("Test");
-            #endif
-            
+#endif
+
             Application.Run(new Form1());
-            
-            #if DEBUG
+
+#if DEBUG
             NativeMethods.FreeConsole();
-            #endif
+#endif
         }
     }
 }
