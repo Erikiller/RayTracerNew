@@ -2,14 +2,26 @@
 
 namespace RayTracerTest2;
 #if DEBUG
-class Debug
+public class Debug
 {
     public static void Log(string message, [Optional, DefaultParameterValue(LogPrefix.NoInfo)] LogPrefix logPrefix,
-        [Optional, DefaultParameterValue("No Comment")] string comment)
+        [Optional, DefaultParameterValue("No Comment")]
+        string comment)
     {
-        DateTime dt = new();
-        string msg = $"{dt.TimeOfDay} : {logPrefix}:\n{message}\nComment: {comment}";
+        string directory = @".\log\";
+        string convertedDay = (DateTime.Today.ToString("d").Replace(".", "_"));
+        string filePath = @".\log\log_" + convertedDay +".txt";
+
+        string msg = $"{DateTime.Now} : {logPrefix}: {message} (Comment: {comment})\n";
         Console.WriteLine(msg);
+
+        if (!Directory.Exists(directory))
+            Directory.CreateDirectory(directory);
+        if (!File.Exists(filePath))
+           File.Create(filePath);
+
+        using (StreamWriter sw = File.AppendText(filePath))
+            sw.WriteLine(msg);
     }
 }
 #endif

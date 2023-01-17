@@ -14,7 +14,7 @@ namespace RayTracerTest2
             ApplicationConfiguration.Initialize();
 #if DEBUG
             NativeMethods.AllocConsole();
-            Console.WriteLine("Test");
+            Debug.Log("Test");
 #endif
 
             Application.Run(new Form1());
