@@ -15,7 +15,11 @@ namespace RayTracerTest2
 
             this.Text = "Rendering Programm";
         }
-
+        
+        /// <summary>
+        /// Generates a random scene with random spheres
+        /// </summary>
+        /// <returns></returns>
         HittableList RandomScene()
         {
             HittableList world = new();
@@ -77,6 +81,9 @@ namespace RayTracerTest2
         /// <returns>Bitmap</returns>
         unsafe Bitmap Render()
         {
+            // IMPORTANT VAR'S
+            float samplesPerPixel = 1; // The higher the Samples per Pixel, the higher the render time
+
             Random rnd = new();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -86,34 +93,9 @@ namespace RayTracerTest2
             const int imageHeight = (int)(imageWidth / aspectRatio);
 
             // World
-            //HittableList world = new();
-            float ra = (float)Math.Cos(Math.PI / 4f);
-
+            float radiant = (float)Math.Cos(Math.PI / 4f);
             HittableList world = RandomScene();
-            //Materials materialLeft = new Lambertian(new Vector3(0f, 0f, 1f));
-            //Materials materialRight = new Lambertian(new Vector3(1f, 0f, 0f));
-
-            //world.Add(new Sphere(new Vector3(-ra, 0f, -1f), ra, materialLeft));
-            //world.Add(new Sphere(new Vector3(ra, 0f, -1f), ra, materialRight));
-
-            //Be careful with the order of rendering the objects,
-            //there can be some issues with how the objects are placed
-            //world.Add(new Sphere(new Vector3(0f, -100.5f, -1f), 100f));
-            //world.Add(new Sphere(new Vector3(0f, 0f, -1f), 0.5f));
-
-            //Materials materialGround = new Lambertian(new Vector3(0.8f, 0.8f, 0f));
-            //Materials materialCenter = new Lambertian(new Vector3(0.1f, 0.2f, 0.5f));
-            //Materials materialLeft = new Dielectric(1.5f);
-            //Materials materialRight = new Metal(new Vector3(0.8f, 0.6f, 0.2f), 0f);
-
-            //Materials materialCenter = new Lambertian(new Vector3(0.7f, 0.3f, 0.3f));
-            //Materials materialLeft = new Metal(new Vector3(0.8f, 0.8f, 0.8f),0.3f);
-
-            //world.Add(new Sphere(new Vector3(0f, -100.5f,-1f),100f,materialGround)); 
-            //world.Add(new Sphere(new Vector3(-1f,0f,-1f),0.5f,materialLeft)); 
-            //world.Add(new Sphere(new Vector3(-1f, 0f, -1f), -0.45f, materialLeft)); 
-            //world.Add(new Sphere(new Vector3(1f,0f,-1f),0.5f,materialRight));
-            //world.Add(new Sphere(new Vector3(0f,0f,-1f),0.5f,materialCenter)); 
+            
             // Camera
             float viewportHeight = 2.0f;
             float viewportWidth = aspectRatio * viewportHeight;
@@ -132,8 +114,7 @@ namespace RayTracerTest2
             float aperture = 0.1f;
 
             Camera cam = new(20f, lookFrom, lookAt, vup, aperture, distToFocus);
-
-            float samplesPerPixel = 1;
+            
             byte bytesPerPixel = 24;
             int maxDepth = 50;
             Bitmap img = new(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
@@ -157,15 +138,6 @@ namespace RayTracerTest2
                     // Wenn der Schritt positiv ist, ist die Bitmap oben unten.
                     // Wenn der Schritt negativ ist, ist die Bitmap unten nach oben.
                     byte* data = imgPointer + y * imgData.Stride + x * bytesPerPixel / 8;
-                    /*    
-                    float u = (float)(x) / (imageWidth - 1);
-                    float v = (float)(y) / (imageHeight - 1);
-                    
-                    Vector3 dir = lowerLeftCorner + u * horizontal + v * vertical - origin;
-                    Ray r = new Ray(origin, dir);
-
-                    Vector3 color = RayColor(r, world);
-                    */
 
                     Vector3 color = Vector3.Zero;
                     for (int s = 0; s < samplesPerPixel; s++)
@@ -181,13 +153,7 @@ namespace RayTracerTest2
                     color.X = (float)Math.Sqrt(scale * color.X);
                     color.Y = (float)Math.Sqrt(scale * color.Y);
                     color.Z = (float)Math.Sqrt(scale * color.Z);
-
-                    /*color = new Vector3(
-                        255 * (float)Math.Sqrt(color.X),
-                        255 * (float)Math.Sqrt(color.Y),
-                        255 * (float)Math.Sqrt(color.Z)
-                    );
-                    */
+                    
                     Mathematics mth = new();
                     color = new Vector3(
                         255f * mth.Clamp(color.X, 0.0f, 0.999f),
@@ -214,10 +180,10 @@ namespace RayTracerTest2
 
         Vector3 RayColor(Ray r, Hittable world, int depth)
         {
-            HitRecord rec = world.hit(r, 0.0001f, float.MaxValue);
+            HitRecord rec = world.Hit(r, 0.0001f, float.MaxValue);
             if (depth <= 0) return Vector3.Zero;
 
-            if (rec.didHit)
+            if (rec.DidHit)
             {
                 Scattered scatter = rec.Material.Scatter(r, rec);
                 if (scatter.DidScatter)
@@ -226,17 +192,6 @@ namespace RayTracerTest2
                 }
 
                 return Vector3.Zero;
-
-                /*Ray scattered = new();
-                Vector3 attenuation;
-                if (rec.Material.Scatter(r, rec, attenuation, scattered))
-                {
-                    return attenuation * RayColor(scattered, world, depth - 1);
-                }
-
-                return Vector3.Zero; /*
-                /*Vector3 target = rec.p + rec.normal + Mathematics.RandomInHeimisphere(rec.normal); //Can also take "Mathematics.RandomUnitVector();"
-                return 0.5f * RayColor(new Ray(rec.p, target - rec.p), world, depth -1); */
             }
 
             Vector3 unitDirection = Vector3.Normalize(r.Direction);
@@ -253,14 +208,8 @@ namespace RayTracerTest2
                 GraphicsUnit.Pixel);
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            //AllocConsole(); // Free console is also needed but I dont know where
-        }
-        /*
-        [DllImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool AllocConsole();*/
+        private void Form1_Load(object sender, EventArgs e) { }
+        
     }
 }
 

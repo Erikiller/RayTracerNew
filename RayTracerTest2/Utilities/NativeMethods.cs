@@ -2,6 +2,9 @@
 
 namespace RayTracerTest2;
 
+/// <summary>
+/// A class to allocate and create a console
+/// </summary>
 internal static class NativeMethods
 {
     // http://msdn.microsoft.com/en-us/library/ms681944(VS.85).aspx

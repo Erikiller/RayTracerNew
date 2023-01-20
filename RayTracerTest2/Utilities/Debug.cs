@@ -4,6 +4,12 @@ namespace RayTracerTest2;
 #if DEBUG
 public class Debug
 {
+    /// <summary>
+    /// Writes a log inside the console and to the .\log\ folder
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="logPrefix"></param>
+    /// <param name="comment"></param>
     public static void Log(string message, [Optional, DefaultParameterValue(LogPrefix.NoInfo)] LogPrefix logPrefix,
         [Optional, DefaultParameterValue("No Comment")]
         string comment)
@@ -25,7 +31,9 @@ public class Debug
     }
 }
 #endif
-
+/// <summary>
+/// The LogPrefix is used to determine the importance of the log message
+/// </summary>
 public enum LogPrefix
 
 {
