@@ -15,7 +15,7 @@ namespace RayTracerTest2
 
             this.Text = "Rendering Programm";
         }
-        
+
         /// <summary>
         /// Generates a random scene with random spheres
         /// </summary>
@@ -27,6 +27,7 @@ namespace RayTracerTest2
 
             Materials ground = new Lambertian(new Vector3(0.5f, 0.5f, 0.5f));
             world.Add(new Sphere(new Vector3(0f, -1000f, 0f), 1000, ground));
+
 
             for (int a = -11; a < 11; a++)
             {
@@ -82,7 +83,7 @@ namespace RayTracerTest2
         unsafe Bitmap Render()
         {
             // IMPORTANT VAR'S
-            float samplesPerPixel = 1; // The higher the Samples per Pixel, the higher the render time
+            float samplesPerPixel = 3; // The higher the Samples per Pixel, the higher the render time
 
             Random rnd = new();
             Stopwatch stopwatch = new Stopwatch();
@@ -95,7 +96,7 @@ namespace RayTracerTest2
             // World
             float radiant = (float)Math.Cos(Math.PI / 4f);
             HittableList world = RandomScene();
-            
+
             // Camera
             float viewportHeight = 2.0f;
             float viewportWidth = aspectRatio * viewportHeight;
@@ -114,9 +115,9 @@ namespace RayTracerTest2
             float aperture = 0.1f;
 
             Camera cam = new(20f, lookFrom, lookAt, vup, aperture, distToFocus);
-            
+
             byte bytesPerPixel = 24;
-            int maxDepth = 50;
+            int maxDepth = 40;
             Bitmap img = new(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
 
             BitmapData imgData = img.LockBits(
@@ -124,14 +125,30 @@ namespace RayTracerTest2
                 ImageLockMode.WriteOnly,
                 img.PixelFormat);
 
-            int count = 0;
             // Scan0 => determine/calls the first address of the bitmap
             byte* imgPointer = (byte*)imgData.Scan0.ToPointer();
 
-            for (int x = 0; x < imageWidth; x++)
+
+            int counterX = 0;
+            int counterY = 0;
+            Parallel.For(0, (int)img.Width, delegate(int i)
             {
-                for (int y = 0; y < imageHeight; y++)
+                int x = Interlocked.Increment(ref counterX);
+                if (x > img.Width)
                 {
+                    x = 0;
+                    counterX = 0;
+                }
+
+                Parallel.For(0, img.Height, delegate(int j)
+                {
+                    int y = Interlocked.Increment(ref counterY);
+                    if (y > img.Height)
+                    {
+                        y = 0;
+                        counterY = 0;
+                    }
+
                     // Image Stride expl. Germ. =>
                     // Die Stride ist die Breite einer einzelnen Pixelzeile (eine Scanlinie),
                     // die auf eine Vier-Byte-Grenze gerundet ist.
@@ -153,7 +170,7 @@ namespace RayTracerTest2
                     color.X = (float)Math.Sqrt(scale * color.X);
                     color.Y = (float)Math.Sqrt(scale * color.Y);
                     color.Z = (float)Math.Sqrt(scale * color.Z);
-                    
+
                     Mathematics mth = new();
                     color = new Vector3(
                         255f * mth.Clamp(color.X, 0.0f, 0.999f),
@@ -164,16 +181,15 @@ namespace RayTracerTest2
                     data[2] = (byte)color.X;
                     data[1] = (byte)color.Y;
                     data[0] = (byte)color.Z;
-                    count = x + y;
-                }
-            }
+                });
+            });
 
-            
             img.UnlockBits(imgData);
             img.RotateFlip(RotateFlipType.Rotate180FlipX);
             stopwatch.Stop();
+
 #if DEBUG
-            Console.WriteLine($"{count} Itterations in Render"); //For Debug
+            Debug.Log($"Time of Render: {stopwatch.Elapsed}");
 #endif
             return img;
         }
@@ -208,8 +224,9 @@ namespace RayTracerTest2
                 GraphicsUnit.Pixel);
         }
 
-        private void Form1_Load(object sender, EventArgs e) { }
-        
+        private void Form1_Load(object sender, EventArgs e)
+        {
+        }
     }
 }
 
