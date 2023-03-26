@@ -129,105 +129,105 @@ namespace RayTracerTest2
             byte* imgPointer = (byte*)imgData.Scan0.ToPointer();
 
 
-            int counterX = 0;
-            int counterY = 0;
-            Parallel.For(0, (int)img.Width, delegate(int i)
-            {
-                int x = Interlocked.Increment(ref counterX);
-                if (x > img.Width)
+            Parallel.For(0, img.Width,
+                new ParallelOptions()
                 {
-                    x = 0;
-                    counterX = 0;
-                }
-
-                Parallel.For(0, img.Height, delegate(int j)
+                    MaxDegreeOfParallelism = Convert.ToInt32(Math.Ceiling((Environment.ProcessorCount * 0.75) * 2.0))
+                },
+                (int x) =>
                 {
-                    int y = Interlocked.Increment(ref counterY);
-                    if (y > img.Height)
-                    {
-                        y = 0;
-                        counterY = 0;
-                    }
+                    Parallel.For(0, img.Height,
+                        new ParallelOptions()
+                        {
+                            MaxDegreeOfParallelism =
+                                Convert.ToInt32(Math.Ceiling((Environment.ProcessorCount * 0.75) * 2.0))
+                        },
+                        (int y) =>
+                        {
+                            y = (y < 675) ? 0 : y;
+                            // Image Stride expl. Germ. =>
+                            // Die Stride ist die Breite einer einzelnen Pixelzeile (eine Scanlinie),
+                            // die auf eine Vier-Byte-Grenze gerundet ist.
+                            // Wenn der Schritt positiv ist, ist die Bitmap oben unten.
+                            // Wenn der Schritt negativ ist, ist die Bitmap unten nach oben.
+                            byte* data = imgPointer + x * imgData.Stride + y * bytesPerPixel / 8;
 
-                    // Image Stride expl. Germ. =>
-                    // Die Stride ist die Breite einer einzelnen Pixelzeile (eine Scanlinie),
-                    // die auf eine Vier-Byte-Grenze gerundet ist.
-                    // Wenn der Schritt positiv ist, ist die Bitmap oben unten.
-                    // Wenn der Schritt negativ ist, ist die Bitmap unten nach oben.
-                    byte* data = imgPointer + y * imgData.Stride + x * bytesPerPixel / 8;
+                            Vector3 color = Vector3.Zero;
+                            for (int s = 0; s > samplesPerPixel; s++)
+                            {
+                                float u = (x + (float)rnd.NextDouble()) / (imageWidth - 1);
+                                float v = (y + (float)rnd.NextDouble()) / (imageHeight - 1);
+                                Ray r = cam.GetRay(u, v);
+                                color += RayColor(r, world, maxDepth);
+                            }
 
-                    Vector3 color = Vector3.Zero;
-                    for (int s = 0; s < samplesPerPixel; s++)
-                    {
-                        float u = (x + (float)rnd.NextDouble()) / (imageWidth - 1);
-                        float v = (y + (float)rnd.NextDouble()) / (imageHeight - 1);
-                        Ray r = cam.GetRay(u, v);
-                        color += RayColor(r, world, maxDepth);
-                    }
+                            // Divide the color by the number of samples and gamma-correction for gamma=2.0
+                            float scale = 1.0f / samplesPerPixel;
+                            color.X = (float)Math.Sqrt(scale * color.X);
+                            color.Y = (float)Math.Sqrt(scale * color.Y);
+                            color.Z = (float)Math.Sqrt(scale * color.Z);
 
-                    // Divide the color by the number of samples and gamma-correction for gamma=2.0
-                    float scale = 1.0f / samplesPerPixel;
-                    color.X = (float)Math.Sqrt(scale * color.X);
-                    color.Y = (float)Math.Sqrt(scale * color.Y);
-                    color.Z = (float)Math.Sqrt(scale * color.Z);
+                            Mathematics mth = new();
+                            color = new Vector3(
+                                255f * mth.Clamp(color.X, 0.0f, 0.999f),
+                                255f * mth.Clamp(color.Y, 0.0f, 0.999f),
+                                255f * mth.Clamp(color.Z, 0.0f, 0.999f)
+                            );
 
-                    Mathematics mth = new();
-                    color = new Vector3(
-                        255f * mth.Clamp(color.X, 0.0f, 0.999f),
-                        255f * mth.Clamp(color.Y, 0.0f, 0.999f),
-                        255f * mth.Clamp(color.Z, 0.0f, 0.999f)
-                    );
-
-                    data[2] = (byte)color.X;
-                    data[1] = (byte)color.Y;
-                    data[0] = (byte)color.Z;
+                            data[2] = (byte)color.X;
+                            data[1] = (byte)color.Y;
+                            data[0] = (byte)color.Z;
+                        });
                 });
-            });
+            
+            
+            
 
-            img.UnlockBits(imgData);
-            img.RotateFlip(RotateFlipType.Rotate180FlipX);
-            stopwatch.Stop();
+
+    img.UnlockBits(imgData);
+    img.RotateFlip(RotateFlipType.Rotate180FlipX);
+    stopwatch.Stop();
 
 #if DEBUG
-            Debug.Log($"Time of Render: {stopwatch.Elapsed}");
+    Debug.Log($"Time of Render: {stopwatch.Elapsed}");
 #endif
-            return img;
-        }
+    return img;
+}
 
-        Vector3 RayColor(Ray r, Hittable world, int depth)
+Vector3 RayColor(Ray r, Hittable world, int depth)
+{
+    HitRecord rec = world.Hit(r, 0.0001f, float.MaxValue);
+    if (depth <= 0) return Vector3.Zero;
+
+    if (rec.DidHit)
+    {
+        Scattered scatter = rec.Material.Scatter(r, rec);
+        if (scatter.DidScatter)
         {
-            HitRecord rec = world.Hit(r, 0.0001f, float.MaxValue);
-            if (depth <= 0) return Vector3.Zero;
-
-            if (rec.DidHit)
-            {
-                Scattered scatter = rec.Material.Scatter(r, rec);
-                if (scatter.DidScatter)
-                {
-                    return scatter.Attenuation * RayColor(scatter.ScatteredRay, world, depth - 1);
-                }
-
-                return Vector3.Zero;
-            }
-
-            Vector3 unitDirection = Vector3.Normalize(r.Direction);
-            float t = 0.5f * (unitDirection.Y + 1.0f);
-            return (1.0f - t) * new Vector3(1, 1, 1) + t * new Vector3(0.5f, 0.7f, 1.0f);
+            return scatter.Attenuation * RayColor(scatter.ScatteredRay, world, depth - 1);
         }
 
-        private void Form1_Paint(object sender, PaintEventArgs e)
-        {
-            Bitmap img = Render();
-
-            e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-            e.Graphics.DrawImage(img, new Rectangle(0, 0, Width, Height), 0, 0, img.Width, img.Height,
-                GraphicsUnit.Pixel);
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-        }
+        return Vector3.Zero;
     }
+
+    Vector3 unitDirection = Vector3.Normalize(r.Direction);
+    float t = 0.5f * (unitDirection.Y + 1.0f);
+    return (1.0f - t) * new Vector3(1, 1, 1) + t * new Vector3(0.5f, 0.7f, 1.0f);
+}
+
+private void Form1_Paint(object sender, PaintEventArgs e)
+{
+    Bitmap img = Render();
+
+    e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+    e.Graphics.DrawImage(img, new Rectangle(0, 0, Width, Height), 0, 0, img.Width, img.Height,
+        GraphicsUnit.Pixel);
+}
+
+private void Form1_Load(object sender, EventArgs e)
+{
+}
+}
 }
 
 
