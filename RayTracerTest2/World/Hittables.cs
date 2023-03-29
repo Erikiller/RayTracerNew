@@ -3,15 +3,12 @@ using System.Runtime.CompilerServices;
 
 namespace RayTracerTest2;
 
-
 public class Sphere : Hittable
 {
     public Vector3 Center;
     public readonly float Radius;
     public readonly Materials Material;
 
-    public Sphere() { }
-    
     /// <summary>
     /// Constructor for creating a sphere
     /// </summary>
@@ -33,7 +30,13 @@ public class Sphere : Hittable
         float c = oc.LengthSquared() - Radius * Radius;
 
         float discriminant = halfB * halfB - a * c;
-        if (discriminant < 0) return new HitRecord();
+        if (discriminant < 0)
+        {
+            return new HitRecord();
+#if DEBUG
+            Debug.Log("new HitRecord got triggered!");
+#endif
+        }
 
         float sqrtd = (float)Math.Sqrt(discriminant);
 
@@ -55,7 +58,7 @@ public class Sphere : Hittable
         rec.SetFaceToNormal(r, outwardNormal);
         rec.DidHit = true;
         rec.Material = Material;
-        
+
         return rec;
     }
 }
@@ -64,12 +67,13 @@ public abstract class Hittable
 {
     public abstract HitRecord Hit(Ray r, float tMin, float tMax);
 }
+
 public class HitRecord
 {
     public Vector3 P { get; set; }
-    public Vector3 Normal { get; set; }
+    public Vector3 Normal { get; private set; }
     public float T { get; set; }
-    public bool FrontFace { get; set; }
+    public bool FrontFace { get; private set; }
     public bool DidHit { get; set; }
     public Materials Material { get; set; }
 
@@ -82,6 +86,7 @@ public class HitRecord
         DidHit = didHit;
         Material = material;
     }
+
     /// <summary>
     /// Set <see cref="DidHit"/> to false
     /// </summary>
@@ -89,24 +94,26 @@ public class HitRecord
     {
         DidHit = false;
     }
-    
+
     /// <summary>
     /// Determine the direction of the ray hit
     /// </summary>
     /// <param name="r"></param>
     /// <param name="outwardNormal"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetFaceToNormal(Ray r, Vector3 outwardNormal)
     {
         FrontFace = Vector3.Dot(r.Direction, outwardNormal) < 0;
-        Normal = FrontFace ? outwardNormal : -(outwardNormal);
+        Normal = FrontFace ? outwardNormal : -outwardNormal;
     }
 }
 
 public class HittableList : Hittable
 {
     public readonly List<Hittable> Objects = new();
-    public HittableList() { }
+
+    public HittableList()
+    {
+    }
 
     /// <summary>
     /// Creates new object in the list of hittables 
@@ -116,6 +123,7 @@ public class HittableList : Hittable
     {
         Add(@object);
     }
+
     /// <summary>
     /// Clears the clears the list of hittables
     /// </summary>
